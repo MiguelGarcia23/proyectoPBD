@@ -1,0 +1,8 @@
+CREATE CONSTRAINT usuario_id IF NOT EXISTS
+FOR (u:Usuario) REQUIRE u.id IS UNIQUE;
+
+CREATE CONSTRAINT producto_id IF NOT EXISTS
+FOR (p:Producto) REQUIRE p.id IS UNIQUE;
+
+CREATE CONSTRAINT categoria_nombre IF NOT EXISTS
+FOR (c:Categoria) REQUIRE c.nombre IS UNIQUE;
