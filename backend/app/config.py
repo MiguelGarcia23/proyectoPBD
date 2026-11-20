@@ -11,8 +11,8 @@ class Settings(BaseSettings):
 
     # Neo4j
     neo4j_uri: str = "bolt://localhost:7687"
-    neo4j_user: str = "admin"
-    neo4j_password: str = "admin12345"
+    neo4j_user: str = "neo4j"
+    neo4j_password: str = "neo4j12345"
 
     # Orígenes permitidos para CORS (el front-end), separados por comas
     cors_origins: str = "*"

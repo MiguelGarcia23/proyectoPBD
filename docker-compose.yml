@@ -13,6 +13,7 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
+      - ./mongo/init.js:/docker-entrypoint-initdb.d/init.js:ro
     healthcheck:
       test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
       interval: 10s
@@ -65,7 +66,7 @@ services:
     container_name: tienda-neo4j
     restart: unless-stopped
     environment:
-      NEO4J_AUTH: ${NEO4J_USER:-admin}/${NEO4J_PASSWORD:-admin12345}
+      NEO4J_AUTH: ${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-neo4j12345}
     ports:
       - "7474:7474"   # Navegador web de Neo4j
       - "7687:7687"   # Protocolo Bolt (lo usa la API)
@@ -80,6 +81,29 @@ services:
     networks:
       - tienda-net
 
+  # Servicio de un solo uso: crea las restricciones de unicidad cuando Neo4j está listo, y luego termina.
+  neo4j-init:
+    image: neo4j:5-community
+    container_name: tienda-neo4j-init
+    depends_on:
+      neo4j:
+        condition: service_healthy
+    volumes:
+      - ./neo4j/init.cypher:/init.cypher:ro
+    entrypoint:
+      - cypher-shell
+      - -a
+      - bolt://neo4j:7687
+      - -u
+      - neo4j
+      - -p
+      - ${NEO4J_PASSWORD:-neo4j12345}
+      - -f
+      - /init.cypher
+    restart: "no"
+    networks:
+      - tienda-net
+  
   # API (FastAPI)
   api:
     build: ./backend

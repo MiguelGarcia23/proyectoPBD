@@ -3,7 +3,7 @@
 CREATE KEYSPACE IF NOT EXISTS tienda
   WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};
 
-USE tienda
+USE tienda;
 
 -- Consulta 1: "¿Cuántas visitas ha tenido el producto X cada día?"
 -- Partición = producto, filas ordenadas por día (más reciente primero).
