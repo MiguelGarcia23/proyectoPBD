@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 
 from app.config import settings
 from app.db import mongo_db, cassandra_db, neo4j_db
+from app.routers import metricas, pedidos, productos, recomendaciones, usuarios
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("tienda")
@@ -48,6 +49,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Endpoints agrupados por base de datos
+app.include_router(productos.router)        
+app.include_router(usuarios.router)         
+app.include_router(pedidos.router)          
+app.include_router(metricas.router)
+app.include_router(recomendaciones.router)
 
 @app.get("/", tags=["Home"])
 def raiz():
