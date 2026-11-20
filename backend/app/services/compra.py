@@ -20,7 +20,8 @@ from app.utils.utils import a_object_id, doc_a_dict
 
 log = logging.getLogger("tienda")
 
-def realizar_compra(datos: PedidoCrear) -> dict:
+def realizar_compra(datos: PedidoCrear, fecha: datetime | None = None) -> dict:
+    """Realiza la compra. `fecha` para los datos iniciales"""
     db = get_db()
 
     # ---------- Validaciones previas ----------
@@ -70,7 +71,7 @@ def realizar_compra(datos: PedidoCrear) -> dict:
 
         pedido = {
             "usuario_id": datos.usuario_id,
-            "fecha": datetime.now(timezone.utc),
+            "fecha": fecha or datetime.now(timezone.utc),
             "estado": "pagado",
             "lineas": lineas,
             "total": round(sum(l["precio_unitario"] * l["cantidad"] for l in lineas), 2),

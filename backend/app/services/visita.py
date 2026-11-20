@@ -16,9 +16,11 @@ from app.services import grafo
 
 log = logging.getLogger("tienda")
 
-def registrar_visita(producto: dict, usuario_id: str | None) -> None:
+def registrar_visita(producto: dict, usuario_id: str | None, momento: datetime | None = None) -> None:
+    """`momento` solo lo usa el script de inicializar para visitas en días pasados"""
+    
     producto_id = producto["id"]
-    hoy = datetime.now(timezone.utc).date()
+    hoy = (momento or datetime.now(timezone.utc)).date()
 
     # Cassandra: contador de visitas del día
     try:
