@@ -1,9 +1,15 @@
-from fastapi import APIRouter, HTTPException, Query
+import logging
+
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Query
 from pymongo.errors import DuplicateKeyError
 
 from app.db.mongo_db import get_db
 from app.models.producto import Categoria, Genero, Producto, ProductoCrear
+from app.services import grafo
+from app.services.visita import registrar_visita
 from app.utils.utils import a_object_id, doc_a_dict
+
+log = logging.getLogger("tienda")
 
 router = APIRouter(prefix="/productos", tags=["Prendas"])
 
@@ -46,12 +52,19 @@ def listar_productos(
     return [doc_a_dict(d) for d in cursor.skip(saltar).limit(limite)]
 
 @router.get("/{producto_id}", response_model=Producto)
-def obtener_producto(producto_id: str):
-    """Ficha completa de una prenda con todas sus variantes."""
+def obtener_producto(
+    producto_id: str,
+    tareas: BackgroundTasks,
+    usuario_id: str | None = Query(None, description="Usuario que ve la prenda (para recomendaciones)"),
+):
+    """Ficha completa de una prenda con todas sus variantes"""
+    """Después de responder registra la visita en Cassandra (+1 visita del día) y, si se indica el usuario, en Neo4j (relación VIO)"""
     doc = get_db().productos.find_one({"_id": a_object_id(producto_id)})
     if doc is None:
         raise HTTPException(status_code=404, detail="Prenda no encontrada")
-    return doc_a_dict(doc)
+    producto = doc_a_dict(doc)
+    tareas.add_task(registrar_visita, producto, usuario_id)
+    return producto
 
 @router.post("", response_model=Producto, status_code=201)
 def crear_producto(producto: ProductoCrear):
@@ -62,4 +75,11 @@ def crear_producto(producto: ProductoCrear):
     except DuplicateKeyError:
         raise HTTPException(status_code=409, detail="Ya existe una variante con alguno de esos SKU")
     doc["_id"] = resultado.inserted_id
-    return doc_a_dict(doc)
+    nuevo = doc_a_dict(doc)
+
+    # Nodo en el grafo. Si falla, la prenda ya existe en Mongo
+    try:
+        grafo.guardar_producto(nuevo["id"], nuevo["nombre"], nuevo["categoria"])
+    except Exception as e:
+        log.warning("Prenda %s creada pero no se pudo crear el nodo en Neo4j: %s", nuevo["id"], e)
+    return nuevo

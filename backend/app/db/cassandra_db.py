@@ -1,4 +1,6 @@
+from functools import lru_cache
 from cassandra.cluster import Cluster, Session
+from cassandra.query import PreparedStatement
 
 from app.config import settings
 
@@ -26,3 +28,8 @@ def ping() -> bool:
         return True
     except Exception:
         return False
+
+@lru_cache(maxsize=None)
+def preparada(cql: str) -> PreparedStatement:
+    """Devuelve la sentencia preparada (se prepara una sola vez y se reutiliza)."""
+    return get_session().prepare(cql)
