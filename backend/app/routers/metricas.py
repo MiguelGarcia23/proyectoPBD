@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date, timedelta, timezone
 from functools import lru_cache
 
 from fastapi import APIRouter, Path, Query
@@ -42,7 +42,7 @@ def ventas_del_dia(fecha: date):
         (fecha,),
     )
     ventas = [{
-        "momento": f.momento, "pedido_id": f.pedido_id, "producto_id": f.producto_id,
+        "momento": f.momento.replace(tzinfo=timezone.utc), "pedido_id": f.pedido_id, "producto_id": f.producto_id,
         "sku": f.sku, "talla": f.talla, "color": f.color, "usuario_id": f.usuario_id,
         "cantidad": f.cantidad, "importe": float(f.importe or 0),
     } for f in filas]

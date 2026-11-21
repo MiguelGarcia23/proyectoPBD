@@ -7,7 +7,7 @@ _client: MongoClient | None = None
 
 def conectar() -> None:
     global _client
-    _client = MongoClient(settings.mongo_uri, serverSelectionTimeoutMS=5000)
+    _client = MongoClient(settings.mongo_uri, serverSelectionTimeoutMS=5000, tz_aware=True)
     _client.admin.command("ping")
 
 def cerrar() -> None:

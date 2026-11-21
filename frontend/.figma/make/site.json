@@ -1,0 +1,10 @@
+{
+  "description": "Explora y compra moda, recibe recomendaciones personalizadas y consulta pedidos y métricas; una tienda online que demuestra cómo colaboran MongoDB, Cassandra y Neo4j.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

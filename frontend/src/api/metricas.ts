@@ -1,0 +1,10 @@
+import { USE_MOCK } from "../config";
+import type { Categoria, Ranking, TallasMes, VentasDia, VentasMes, VisitasProducto } from "../types/api";
+import { apiGet } from "./client";
+import { productos, wait } from "./mock/data";
+const days = (n: number) => Array.from({ length: n }, (_, i) => new Date(Date.now() - 864e5 * i).toISOString().slice(0, 10));
+export const ventasMes = (mes: string) => USE_MOCK ? wait<VentasMes>({ mes, total_pedidos: 148, importe_total: 12846.72, por_dia: days(30).map((dia, i) => ({ dia, pedidos: 3 + (i * 7) % 8, importe: 240 + (i * 83) % 510 })) }) : apiGet<VentasMes>(`/metricas/ventas/mes/${mes}`);
+export const ventasDia = (dia: string) => USE_MOCK ? wait<VentasDia>({ dia, unidades: 23, importe_total: 1684.4, ventas: productos.slice(0, 6).map((p, i) => ({ momento: new Date(Date.now() - i * 38e5).toISOString(), pedido_id: `PED-${1024 + i}`, producto_id: p.id, sku: p.variantes[1].sku, talla: "M", color: "Oliva", usuario_id: `USR-${i}`, cantidad: i % 2 + 1, importe: p.precio * (i % 2 + 1) })) }) : apiGet<VentasDia>(`/metricas/ventas/dia/${dia}`);
+export const ranking = (mes: string, limite = 10) => USE_MOCK ? wait<Ranking>({ mes, ranking: productos.slice(0, limite).map((p, i) => ({ posicion: i + 1, producto_id: p.id, nombre: p.nombre, unidades: 42 - i * 3, importe: (42 - i * 3) * p.precio })) }) : apiGet<Ranking>(`/metricas/ranking/${mes}?limite=${limite}`);
+export const tallas = (mes: string, categoria: Categoria) => USE_MOCK ? wait<TallasMes>({ mes, categoria, tallas: ["XS", "S", "M", "L", "XL"].map((talla, i) => ({ talla, unidades: [12, 27, 44, 31, 16][i] })) }) : apiGet<TallasMes>(`/metricas/tallas/${mes}/${categoria}`);
+export const visitas = (pid: string, dias = 7) => USE_MOCK ? wait<VisitasProducto>({ producto_id: pid, dias, total_visitas: dias * 19, por_dia: days(dias).map((dia, i) => ({ dia, visitas: 10 + (i * 9) % 24 })) }) : apiGet<VisitasProducto>(`/metricas/visitas/${pid}?dias=${dias}`);

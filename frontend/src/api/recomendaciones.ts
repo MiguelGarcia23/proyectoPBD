@@ -1,0 +1,10 @@
+import { USE_MOCK } from "../config";
+import type { Recomendacion } from "../types/api";
+import { apiGet } from "./client";
+import { recomendaciones, wait } from "./mock/data";
+const get = (ruta: string) => USE_MOCK ? wait(recomendaciones.slice(Math.floor(Math.random() * 3), 7)) : apiGet<Recomendacion[]>(`${ruta}?limite=5`);
+export const completaElLook = (id: string) => get(`/recomendaciones/completa-el-look/${id}`);
+export const tambienCompraron = (id: string) => get(`/recomendaciones/tambien-compraron/${id}`);
+export const mismaCategoria = (id: string) => get(`/recomendaciones/misma-categoria/${id}`);
+export const paraTi = (id: string) => get(`/recomendaciones/para-ti/${id}`);
+export const vistosNoComprados = (id: string) => get(`/recomendaciones/vistos-no-comprados/${id}`);
